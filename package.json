@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@auth0/nextjs-auth0": "^4.32.1",
+    "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.118.0"
+  }
+}

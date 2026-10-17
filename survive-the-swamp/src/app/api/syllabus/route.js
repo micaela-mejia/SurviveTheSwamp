@@ -2,14 +2,28 @@ import { NextResponse } from "next/server";
 import {
   GeminiConfigurationError,
   GeminiServiceError,
-  generateSyllabusBreakdown,
+  generateAssignmentChecklist,
 } from "@/lib/server/gemini";
+import { requireUser } from "@/lib/server/auth";
+import { rateLimit } from "@/lib/server/ratelimit";
 
 export const runtime = "nodejs";
 
 const MAX_SYLLABUS_LENGTH = 30_000;
+const RATE_LIMIT = 10; // analyses per user per hour (protects the Gemini quota)
 
 export async function POST(request) {
+  const { user, response } = await requireUser();
+  if (response) return response;
+
+  const limit = rateLimit(`syllabus:${user.id}`, RATE_LIMIT, 60 * 60 * 1000);
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: "Too many syllabus analyses. Try again later." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } },
+    );
+  }
+
   let body;
   try {
     body = await request.json();
@@ -46,8 +60,8 @@ export async function POST(request) {
   }
 
   try {
-    const breakdown = await generateSyllabusBreakdown(syllabusText);
-    return NextResponse.json({ breakdown });
+    const assignments = await generateAssignmentChecklist(syllabusText);
+    return NextResponse.json({ assignments });
   } catch (error) {
     if (error instanceof GeminiConfigurationError) {
       return NextResponse.json(

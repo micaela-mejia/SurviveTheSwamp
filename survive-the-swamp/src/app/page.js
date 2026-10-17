@@ -1,25 +1,41 @@
-import SyllabusForm from "@/components/syllabus-form";
+import { auth0 } from "@/lib/auth0";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth0.getSession();
+
   return (
-    <main className="min-h-screen bg-emerald-50 px-6 py-16 text-slate-900">
-      <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-800">
-          Survive the Swamp
+    <main className="min-h-screen bg-emerald-50 px-6 py-24 text-slate-900">
+      <div className="mx-auto max-w-2xl text-center">
+        <h1 className="text-5xl font-bold tracking-tight">Survive the Swamp</h1>
+        <p className="mt-4 text-lg text-slate-700">
+          Don&apos;t just manage your workload. Survive it.
         </p>
-        <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
-          Turn your syllabus into a plan.
-        </h1>
-        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-700">
-          Paste your syllabus and Gemini will identify assignments, due dates,
-          and practical next steps. Dates that aren&apos;t in the syllabus will
-          be marked as unspecified.
-        </p>
-        <SyllabusForm />
-        <p className="mt-6 text-sm text-slate-600">
-          Your syllabus text is sent to Gemini for analysis. Don&apos;t include
-          sensitive information that isn&apos;t needed for this task.
-        </p>
+
+        <div className="mt-8 flex justify-center gap-4">
+          {session ? (
+            <>
+              <a
+                href="/syllabus"
+                className="rounded-full bg-emerald-800 px-6 py-3 font-semibold text-white hover:bg-emerald-900"
+              >
+                Open my syllabus
+              </a>
+              <a
+                href="/auth/logout"
+                className="rounded-full border border-emerald-800 px-6 py-3 font-semibold text-emerald-900 hover:bg-emerald-100"
+              >
+                Log out
+              </a>
+            </>
+          ) : (
+            <a
+              href="/auth/login?returnTo=/syllabus"
+              className="rounded-full bg-emerald-800 px-6 py-3 font-semibold text-white hover:bg-emerald-900"
+            >
+              Log in
+            </a>
+          )}
+        </div>
       </div>
     </main>
   );

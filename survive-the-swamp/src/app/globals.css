@@ -194,6 +194,11 @@ body {
   z-index: 1;
 }
 
+.syllabus-page > .syllabus-checklist-confetti {
+  position: fixed;
+  z-index: 110;
+}
+
 .syllabus-logo {
   position: absolute;
   z-index: 2;
@@ -392,6 +397,96 @@ body {
 
 .syllabus-error {
   margin: 1rem auto 0;
+}
+
+.syllabus-checklist-confetti {
+  position: fixed;
+  z-index: 110;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.syllabus-checklist-confetti-piece {
+  --confetti-x: 0px;
+  --confetti-y: 0px;
+
+  position: absolute;
+  width: 0.45rem;
+  height: 0.65rem;
+  border-radius: 2px;
+  background: #36899a;
+  animation: syllabus-checklist-confetti-burst 700ms ease-out both;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(odd) {
+  background: #36899a;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(even) {
+  background: #f28c45;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(1) {
+  --confetti-x: -34px;
+  --confetti-y: -39px;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(2) {
+  --confetti-x: -10px;
+  --confetti-y: -48px;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(3) {
+  --confetti-x: 17px;
+  --confetti-y: -43px;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(4) {
+  --confetti-x: 38px;
+  --confetti-y: -25px;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(5) {
+  --confetti-x: 43px;
+  --confetti-y: 2px;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(6) {
+  --confetti-x: 31px;
+  --confetti-y: 29px;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(7) {
+  --confetti-x: 7px;
+  --confetti-y: 42px;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(8) {
+  --confetti-x: -19px;
+  --confetti-y: 37px;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(9) {
+  --confetti-x: -41px;
+  --confetti-y: 19px;
+}
+
+.syllabus-checklist-confetti-piece:nth-child(10) {
+  --confetti-x: -46px;
+  --confetti-y: -8px;
+}
+
+@keyframes syllabus-checklist-confetti-burst {
+  from {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(var(--confetti-x), var(--confetti-y)) rotate(250deg);
+  }
 }
 
 .syllabus-results {
@@ -668,7 +763,12 @@ body {
 
   .syllabus-celebration-dialog,
   .syllabus-celebration-gator,
-  .syllabus-celebration-dialog h2 {
+  .syllabus-celebration-dialog h2,
+  .syllabus-checklist-confetti-piece {
     animation: none;
+  }
+
+  .syllabus-checklist-confetti {
+    display: none;
   }
 }

@@ -13,6 +13,7 @@ export default function SyllabusForm() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCelebrationDismissed, setIsCelebrationDismissed] = useState(false);
+  const [confettiBurst, setConfettiBurst] = useState({ id: 0, x: 0, y: 0 });
   const totalTasks =
     assignments?.reduce(
       (total, assignment) => total + assignment.checklist.length,
@@ -86,7 +87,16 @@ export default function SyllabusForm() {
     setAssignments(result.assignments);
   }
 
-  function toggleChecklistItem(itemId) {
+  function toggleChecklistItem(itemId, event) {
+    if (!completedItems[itemId]) {
+      const checkbox = event.currentTarget.getBoundingClientRect();
+      setConfettiBurst((current) => ({
+        id: current.id + 1,
+        x: checkbox.left + checkbox.width / 2,
+        y: checkbox.top + checkbox.height / 2,
+      }));
+    }
+
     setIsCelebrationDismissed(false);
     setCompletedItems((current) => ({
       ...current,
@@ -212,7 +222,9 @@ export default function SyllabusForm() {
                             <label>
                               <input
                                 checked={Boolean(completedItems[itemId])}
-                                onChange={() => toggleChecklistItem(itemId)}
+                                onChange={(event) =>
+                                  toggleChecklistItem(itemId, event)
+                                }
                                 type="checkbox"
                               />
                               <span
@@ -257,6 +269,19 @@ export default function SyllabusForm() {
         <p className="syllabus-error" role="alert">
           {error}
         </p>
+      ) : null}
+
+      {confettiBurst.id > 0 ? (
+        <span
+          aria-hidden="true"
+          className="syllabus-checklist-confetti"
+          key={confettiBurst.id}
+          style={{ left: confettiBurst.x, top: confettiBurst.y }}
+        >
+          {Array.from({ length: 10 }, (_, index) => (
+            <span className="syllabus-checklist-confetti-piece" key={index} />
+          ))}
+        </span>
       ) : null}
 
       {allTasksComplete && !isCelebrationDismissed ? (

@@ -12,11 +12,26 @@ export default function SyllabusForm() {
   const [completedItems, setCompletedItems] = useState({});
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCelebrationDismissed, setIsCelebrationDismissed] = useState(false);
+  const totalTasks =
+    assignments?.reduce(
+      (total, assignment) => total + assignment.checklist.length,
+      0,
+    ) ?? 0;
+
+  const allTasksComplete =
+    totalTasks > 0 &&
+    (assignments ?? []).every((assignment, assignmentIndex) =>
+      assignment.checklist.every((_, itemIndex) =>
+        Boolean(completedItems[`${assignmentIndex}-${itemIndex}`]),
+      ),
+    );
 
   async function handleSubmit(event) {
     event.preventDefault();
     setAssignments(null);
     setCompletedItems({});
+    setIsCelebrationDismissed(false);
     setError("");
     setIsLoading(true);
 
@@ -72,6 +87,7 @@ export default function SyllabusForm() {
   }
 
   function toggleChecklistItem(itemId) {
+    setIsCelebrationDismissed(false);
     setCompletedItems((current) => ({
       ...current,
       [itemId]: !current[itemId],
@@ -80,7 +96,11 @@ export default function SyllabusForm() {
 
   return (
     <main className="syllabus-page">
-      <Link aria-label="Survive the Swamp home" className="syllabus-logo" href="/">
+      <Link
+        aria-label="Survive the Swamp home"
+        className="syllabus-logo"
+        href="/"
+      >
         <span
           aria-label="Survive the Swamp alligator logo. Hover or focus to make it chomp."
           className="syllabus-gator"
@@ -223,6 +243,7 @@ export default function SyllabusForm() {
             onClick={() => {
               setAssignments(null);
               setCompletedItems({});
+              setIsCelebrationDismissed(false);
               setError("");
             }}
             type="button"
@@ -236,6 +257,42 @@ export default function SyllabusForm() {
         <p className="syllabus-error" role="alert">
           {error}
         </p>
+      ) : null}
+
+      {allTasksComplete && !isCelebrationDismissed ? (
+        <div className="syllabus-celebration-backdrop">
+          <section
+            aria-labelledby="syllabus-celebration-title"
+            aria-modal="true"
+            className="syllabus-celebration-dialog"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setIsCelebrationDismissed(true);
+              }
+            }}
+            role="dialog"
+          >
+            <button
+              aria-label="Close celebration"
+              autoFocus
+              className="syllabus-celebration-close"
+              onClick={() => setIsCelebrationDismissed(true)}
+              type="button"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <div aria-hidden="true" className="syllabus-celebration-gator">
+              <Image
+                alt=""
+                className="syllabus-celebration-gator-art"
+                fill
+                sizes="(max-width: 640px) 160px, 220px"
+                src="/artwork/gator-open-clean.png"
+              />
+            </div>
+            <h2 id="syllabus-celebration-title">You survived the swamp!</h2>
+          </section>
+        </div>
       ) : null}
 
       <p className="syllabus-privacy-note">

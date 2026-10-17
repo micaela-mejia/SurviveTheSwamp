@@ -57,6 +57,10 @@ export async function POST(request) {
     }
 
     if (error instanceof GeminiServiceError) {
+      console.error("Syllabus parsing failed:", {
+        message: error.message,
+        ...error.details,
+      });
       return NextResponse.json(
         { error: "Gemini could not analyze the syllabus. Please try again." },
         { status: 502 },

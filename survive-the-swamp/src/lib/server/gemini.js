@@ -1,10 +1,16 @@
 import "server-only";
 
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
 
 export class GeminiConfigurationError extends Error {}
-export class GeminiServiceError extends Error {}
+export class GeminiServiceError extends Error {
+  constructor(message, details = {}) {
+    super(message);
+    this.name = "GeminiServiceError";
+    this.details = details;
+  }
+}
 
 export async function generateSyllabusBreakdown(syllabusText) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -37,12 +43,28 @@ export async function generateSyllabusBreakdown(syllabusText) {
       }),
       signal: AbortSignal.timeout(30_000),
     });
-  } catch {
-    throw new GeminiServiceError("Gemini could not be reached.");
+  } catch (error) {
+    throw new GeminiServiceError("Gemini request did not complete.", {
+      causeName: error instanceof Error ? error.name : "UnknownError",
+      causeMessage: error instanceof Error ? error.message : "Unknown fetch error.",
+      timedOut: error instanceof Error && error.name === "TimeoutError",
+    });
   }
 
   if (!response.ok) {
-    throw new GeminiServiceError("Gemini could not analyze the syllabus.");
+    let errorBody;
+    try {
+      errorBody = await response.json();
+    } catch {
+      errorBody = null;
+    }
+
+    throw new GeminiServiceError("Gemini API request failed.", {
+      httpStatus: response.status,
+      providerStatus: errorBody?.error?.status,
+      providerCode: errorBody?.error?.code,
+      providerMessage: errorBody?.error?.message,
+    });
   }
 
   let result;
@@ -61,7 +83,10 @@ export async function generateSyllabusBreakdown(syllabusText) {
     : "";
 
   if (!breakdown) {
-    throw new GeminiServiceError("Gemini returned no syllabus breakdown.");
+    throw new GeminiServiceError("Gemini returned no syllabus breakdown.", {
+      finishReason: result?.candidates?.[0]?.finishReason,
+      blockReason: result?.promptFeedback?.blockReason,
+    });
   }
 
   return breakdown;

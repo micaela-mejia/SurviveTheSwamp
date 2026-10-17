@@ -1,5 +1,24 @@
 #  Survive the Swamp
 
+## Local development
+
+From this directory, install dependencies and start the Next.js development server:
+
+```bash
+npm install
+npm run dev
+```
+
+For Gemini syllabus breakdowns, copy `.env.example` to `.env.local` and set
+`GEMINI_API_KEY` to your Gemini API key. Restart the development server after
+changing environment variables. Keep `.env.local` private; do not commit API
+keys or expose them through `NEXT_PUBLIC_` variables.
+
+The syllabus endpoint sends text to Gemini from server-side code, so the API key
+is not sent to the browser. The endpoint does not yet require sign-in. Before
+deploying it publicly, add authentication and appropriate usage limits to
+prevent unauthorized use of your Gemini quota.
+
 
 ## The Problem
 Exam seasons and overlapping deadlines leave college students feeling swamped. Task managers feel like flat, stressful lists that add to the anxiety.

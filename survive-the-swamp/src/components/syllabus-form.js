@@ -6,13 +6,15 @@ const MAX_SYLLABUS_LENGTH = 30_000;
 
 export default function SyllabusForm() {
   const [syllabusText, setSyllabusText] = useState("");
-  const [breakdown, setBreakdown] = useState("");
+  const [assignments, setAssignments] = useState(null);
+  const [completedItems, setCompletedItems] = useState({});
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setBreakdown("");
+    setAssignments(null);
+    setCompletedItems({});
     setError("");
     setIsLoading(true);
 
@@ -48,12 +50,30 @@ export default function SyllabusForm() {
       return;
     }
 
-    if (typeof result.breakdown !== "string") {
+    if (
+      !Array.isArray(result.assignments) ||
+      !result.assignments.every(
+        (assignment) =>
+          assignment &&
+          typeof assignment.course === "string" &&
+          typeof assignment.title === "string" &&
+          typeof assignment.dueDate === "string" &&
+          Array.isArray(assignment.checklist) &&
+          assignment.checklist.every((item) => typeof item === "string"),
+      )
+    ) {
       setError("The server returned an unexpected response. Please try again.");
       return;
     }
 
-    setBreakdown(result.breakdown);
+    setAssignments(result.assignments);
+  }
+
+  function toggleChecklistItem(itemId) {
+    setCompletedItems((current) => ({
+      ...current,
+      [itemId]: !current[itemId],
+    }));
   }
 
   return (
@@ -95,12 +115,71 @@ export default function SyllabusForm() {
         </p>
       ) : null}
 
-      {breakdown ? (
+      {assignments ? (
         <section className="mt-8 border-t border-slate-200 pt-6" aria-live="polite">
-          <h2 className="text-xl font-semibold">Your study plan</h2>
-          <div className="mt-4 whitespace-pre-wrap rounded-xl bg-slate-50 p-5 leading-7 text-slate-800">
-            {breakdown}
-          </div>
+          <h2 className="text-xl font-semibold">Assignment checklist</h2>
+          {assignments.length === 0 ? (
+            <p className="mt-4 rounded-xl bg-slate-50 p-5 leading-7 text-slate-700">
+              No assignments could be identified in the supplied text.
+            </p>
+          ) : (
+            <ul className="mt-4 space-y-4">
+              {assignments.map((assignment, assignmentIndex) => (
+                <li
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-5"
+                  key={`${assignment.course}-${assignment.title}-${assignmentIndex}`}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      {assignment.course ? (
+                        <p className="text-sm font-medium text-emerald-800">
+                          {assignment.course}
+                        </p>
+                      ) : null}
+                      <h3 className="mt-1 text-lg font-semibold">
+                        {assignment.title}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-slate-600">
+                      Due: {assignment.dueDate}
+                    </p>
+                  </div>
+                  {assignment.checklist.length > 0 ? (
+                    <ul className="mt-4 space-y-3">
+                      {assignment.checklist.map((item, itemIndex) => {
+                        const itemId = `${assignmentIndex}-${itemIndex}`;
+                        return (
+                          <li key={itemId}>
+                            <label className="flex cursor-pointer items-start gap-3 leading-6 text-slate-700">
+                              <input
+                                checked={Boolean(completedItems[itemId])}
+                                className="mt-1 size-4 accent-emerald-800"
+                                onChange={() => toggleChecklistItem(itemId)}
+                                type="checkbox"
+                              />
+                              <span
+                                className={
+                                  completedItems[itemId]
+                                    ? "text-slate-500 line-through"
+                                    : ""
+                                }
+                              >
+                                {item}
+                              </span>
+                            </label>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p className="mt-3 text-sm text-slate-600">
+                      No checklist steps were provided for this assignment.
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       ) : null}
     </section>

@@ -19,6 +19,10 @@ is not sent to the browser. The endpoint does not yet require sign-in. Before
 deploying it publicly, add authentication and appropriate usage limits to
 prevent unauthorized use of your Gemini quota.
 
+Syllabus analysis returns assignments with due dates and actionable checklist
+items. Checklist completion is kept in the current page session and is not
+saved after a refresh.
+
 
 ## The Problem
 Exam seasons and overlapping deadlines leave college students feeling swamped. Task managers feel like flat, stressful lists that add to the anxiety.

@@ -103,6 +103,9 @@ export default function SyllabusForm() {
           />
         </span>
       </Link>
+      <Link className="syllabus-logout" href="/auth/logout">
+        Log out
+      </Link>
 
       <header className="syllabus-header">
         <h1>

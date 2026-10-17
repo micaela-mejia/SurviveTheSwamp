@@ -204,6 +204,30 @@ body {
   aspect-ratio: 688 / 199;
 }
 
+.syllabus-logout {
+  position: absolute;
+  z-index: 2;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid rgb(227 243 241 / 70%);
+  border-radius: 9999px;
+  background: rgb(7 43 53 / 65%);
+  color: #e3f3f1;
+  font-weight: 600;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.syllabus-logout:hover {
+  background: rgb(7 43 53 / 90%);
+}
+
+.syllabus-logout:focus-visible {
+  outline: 3px solid #d9f99d;
+  outline-offset: 3px;
+}
+
 .syllabus-gator {
   position: relative;
   display: block;

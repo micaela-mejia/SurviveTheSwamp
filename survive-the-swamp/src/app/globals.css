@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Melted Monster";
+  src: url("/fonts/Melted%20Monster.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -23,4 +31,498 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.landing-scene {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.landing-artboard {
+  position: absolute;
+  inset: 0;
+}
+
+.landing-background {
+  object-fit: cover;
+}
+
+.gator-interaction {
+  position: absolute;
+  z-index: 1;
+  top: 11.2%;
+  left: 50%;
+  width: min(67.4vw, 100svh, 1080px);
+  aspect-ratio: 688 / 199;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+.gator-title,
+.login-artwork-label {
+  font-family: "Melted Monster", Impact, "Arial Black", fantasy, sans-serif;
+  font-weight: 400;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.gator-title {
+  position: absolute;
+  top: 45%;
+  left: 42%;
+  z-index: 1;
+  width: 76%;
+  transform: translate(-50%, -50%);
+  color: #77b89b;
+  font-size: clamp(1.2rem, min(4.8svh, 5vw), 2.75rem);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.gator-art {
+  object-fit: contain;
+  transition: opacity 120ms ease-in-out;
+}
+
+.gator-art-open {
+  opacity: 1;
+}
+
+.gator-art-closed {
+  opacity: 0;
+  transform: translateY(6.2%);
+}
+
+.gator-interaction:hover .gator-art-open,
+.gator-interaction:focus-visible .gator-art-open,
+.gator-interaction:active .gator-art-open {
+  opacity: 0;
+}
+
+.gator-interaction:hover .gator-art-closed,
+.gator-interaction:focus-visible .gator-art-closed,
+.gator-interaction:active .gator-art-closed {
+  opacity: 1;
+}
+
+.gator-interaction:focus-visible {
+  outline: 3px solid #d9f99d;
+  outline-offset: 4px;
+}
+
+.login-artwork {
+  position: absolute;
+  z-index: 2;
+  top: 43.6%;
+  left: 50%;
+  width: min(48vw, 620px);
+  aspect-ratio: 382 / 184;
+  transform: translateX(-50%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.login-artwork img {
+  object-fit: contain;
+}
+
+.login-artwork:focus-visible {
+  outline: 3px solid #d9f99d;
+  outline-offset: 4px;
+}
+
+.login-artwork-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  transform: translate(-50%, -50%);
+  color: #173d2a;
+  font-size: clamp(1rem, 3.2vw, 2.5rem);
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
+
+.planner-section {
+  background: #fff;
+  color: #171717;
+  padding: 4rem 1.5rem;
+}
+
+.syllabus-page {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  min-height: 100svh;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding: clamp(2rem, 6vw, 5rem) 1.25rem 3rem;
+  color: #f4fbf8;
+  background: linear-gradient(155deg, #36899a 0%, #236d7b 43%, #0d4650 100%);
+}
+
+.syllabus-page::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  width: 100%;
+  aspect-ratio: 768 / 865;
+  background-image:
+    linear-gradient(180deg, rgb(8 35 38 / 16%), rgb(7 43 53 / 22%)),
+    url("/artwork/swamp-long.png");
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  content: "";
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 75%, transparent 100%);
+}
+
+.syllabus-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.syllabus-logo {
+  position: absolute;
+  z-index: 2;
+  top: clamp(1rem, 3vw, 2rem);
+  left: clamp(1rem, 3vw, 2.5rem);
+  display: block;
+  width: clamp(110px, 17vw, 190px);
+  aspect-ratio: 688 / 199;
+}
+
+.syllabus-gator {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.syllabus-gator-art {
+  object-fit: contain;
+  transition: opacity 120ms ease-in-out;
+}
+
+.syllabus-gator-open {
+  opacity: 1;
+}
+
+.syllabus-gator-closed {
+  opacity: 0;
+  transform: translateY(6.2%);
+}
+
+.syllabus-logo:hover .syllabus-gator-open,
+.syllabus-logo:focus-visible .syllabus-gator-open {
+  opacity: 0;
+}
+
+.syllabus-logo:hover .syllabus-gator-closed,
+.syllabus-logo:focus-visible .syllabus-gator-closed {
+  opacity: 1;
+}
+
+.syllabus-logo:focus-visible {
+  border-radius: 0.5rem;
+  outline: 3px solid #d9f99d;
+  outline-offset: 4px;
+}
+
+.syllabus-header {
+  width: min(100%, 760px);
+  margin: clamp(3.5rem, 8vh, 6rem) auto 0;
+  text-align: center;
+  text-shadow: 0 2px 14px rgb(0 0 0 / 30%);
+}
+
+.syllabus-header h1 {
+  color: #d1f3e5;
+  font-family: "Melted Monster", Impact, "Arial Black", fantasy, sans-serif;
+  font-size: clamp(1.45rem, 4.4vw, 3rem);
+  font-weight: 400;
+  letter-spacing: 0.025em;
+  line-height: 1.2;
+  text-shadow: 0 3px 18px rgb(0 0 0 / 42%);
+  text-transform: uppercase;
+}
+
+.syllabus-header h1 span {
+  display: block;
+}
+
+.syllabus-header h1 span:first-child {
+  white-space: nowrap;
+}
+
+.syllabus-header > p:last-child {
+  max-width: 38rem;
+  margin: 1rem auto 0;
+  color: #e3f3f1;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.6;
+}
+
+.syllabus-cloud {
+  position: relative;
+  width: min(100%, 760px);
+  aspect-ratio: 382 / 184;
+  margin: clamp(1.25rem, 4vh, 2.5rem) auto 0;
+}
+
+.syllabus-cloud-art {
+  object-fit: contain;
+}
+
+.syllabus-cloud-content {
+  position: absolute;
+  inset: 23% 17% 14%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  color: #173d2a;
+}
+
+.syllabus-input {
+  min-height: 0;
+  flex: 1;
+  resize: vertical;
+  border: 1px solid #b9c9c3;
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 96%);
+  padding: 0.75rem;
+  color: #17211d;
+  font: inherit;
+  line-height: 1.45;
+  outline: none;
+}
+
+.syllabus-input:focus {
+  border-color: #176a55;
+  box-shadow: 0 0 0 3px rgb(23 106 85 / 20%);
+}
+
+.syllabus-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.65rem;
+}
+
+.syllabus-character-count {
+  color: #42544c;
+  font-size: 0.75rem;
+}
+
+.syllabus-submit,
+.syllabus-start-over {
+  border: 0;
+  border-radius: 999px;
+  background: #176a55;
+  padding: 0.7rem 1.15rem;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.syllabus-submit:hover:not(:disabled),
+.syllabus-start-over:hover {
+  transform: translateY(-1px);
+  background: #105541;
+}
+
+.syllabus-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.syllabus-submit:focus-visible,
+.syllabus-start-over:focus-visible {
+  outline: 3px solid #d9f99d;
+  outline-offset: 3px;
+}
+
+.syllabus-error,
+.syllabus-empty {
+  width: min(100%, 48rem);
+  border-radius: 0.9rem;
+  padding: 1rem 1.25rem;
+  color: #641b1b;
+  background: #fff0f0;
+}
+
+.syllabus-error {
+  margin: 1rem auto 0;
+}
+
+.syllabus-results {
+  width: min(100%, 960px);
+  margin: clamp(2rem, 5vh, 3.5rem) auto 0;
+}
+
+.syllabus-assignment-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.syllabus-assignment {
+  border: 1px solid rgb(255 255 255 / 42%);
+  border-radius: 1.1rem;
+  background: rgb(248 253 251 / 96%);
+  padding: 1.25rem;
+  color: #17211d;
+  box-shadow: 0 12px 30px rgb(5 35 41 / 18%);
+}
+
+.syllabus-assignment-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.syllabus-assignment-heading h2 {
+  margin-top: 0.25rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.syllabus-course {
+  color: #176a55;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.syllabus-due-date {
+  flex: 0 0 auto;
+  color: #42544c;
+  font-size: 0.85rem;
+}
+
+.syllabus-checklist {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.syllabus-checklist label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.syllabus-checklist input {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+  accent-color: #176a55;
+}
+
+.syllabus-checklist-complete {
+  color: #64736d;
+  text-decoration: line-through;
+}
+
+.syllabus-no-checklist {
+  margin-top: 1rem;
+  color: #52625b;
+}
+
+.syllabus-empty {
+  margin: 0 auto;
+}
+
+.syllabus-start-over {
+  display: block;
+  margin: 1.5rem auto 0;
+  background: #f3fbf8;
+  color: #145342;
+}
+
+.syllabus-start-over:hover {
+  background: #dff2eb;
+}
+
+.syllabus-privacy-note {
+  width: min(100%, 760px);
+  margin: auto auto 0;
+  padding-top: 2.25rem;
+  color: #e1f0ee;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  text-align: center;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 35%);
+}
+
+@media (max-width: 640px) {
+  .syllabus-page {
+    padding-top: 5.5rem;
+  }
+
+  .syllabus-logo {
+    width: clamp(100px, 30vw, 140px);
+  }
+
+  .syllabus-header {
+    margin-top: 1.5rem;
+  }
+
+  .syllabus-cloud {
+    height: clamp(220px, 52vw, 340px);
+    aspect-ratio: auto;
+    margin-top: 1rem;
+  }
+
+  .syllabus-cloud-content {
+    inset: 20% 9% 13%;
+  }
+
+  .syllabus-input {
+    min-height: 70px;
+  }
+
+  .syllabus-character-count {
+    font-size: 0.68rem;
+  }
+
+  .syllabus-submit {
+    padding: 0.65rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .syllabus-assignment-heading {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gator-art,
+  .syllabus-gator-art {
+    transition: none;
+  }
 }

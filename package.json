@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "dev": "npm --prefix survive-the-swamp run dev --"
+  },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.32.1",
     "@google/generative-ai": "^0.24.1",

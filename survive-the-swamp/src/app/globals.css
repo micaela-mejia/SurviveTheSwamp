@@ -399,6 +399,15 @@ body {
   margin: 1rem auto 0;
 }
 
+.syllabus-status {
+  width: min(100%, 48rem);
+  margin: 1rem auto 0;
+  border-radius: 0.9rem;
+  padding: 1rem 1.25rem;
+  color: #145342;
+  background: #e5f5eb;
+}
+
 .syllabus-checklist-confetti {
   position: fixed;
   z-index: 110;

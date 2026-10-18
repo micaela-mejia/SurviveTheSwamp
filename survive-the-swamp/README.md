@@ -14,14 +14,12 @@ For Gemini syllabus breakdowns, copy `.env.example` to `.env.local` and set
 changing environment variables. Keep `.env.local` private; do not commit API
 keys or expose them through `NEXT_PUBLIC_` variables.
 
-The syllabus endpoint sends text to Gemini from server-side code, so the API key
-is not sent to the browser. The endpoint does not yet require sign-in. Before
-deploying it publicly, add authentication and appropriate usage limits to
-prevent unauthorized use of your Gemini quota.
-
-Syllabus analysis returns assignments with due dates and actionable checklist
-items. Checklist completion is kept in the current page session and is not
-saved after a refresh.
+Syllabus text is sent to Gemini by server-side code, so the API key is not sent
+to the browser. Syllabus analysis requires signing in and is limited to 10
+analyses per user per hour. Generated assignments and checklist completion are
+saved to Supabase for the signed-in user, so they remain available after
+refreshing or signing out and back in. Analyzing another syllabus adds its
+assignments to the existing saved plan.
 
 
 ## The Problem

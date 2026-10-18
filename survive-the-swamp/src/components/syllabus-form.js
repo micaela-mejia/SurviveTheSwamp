@@ -2,106 +2,250 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const MAX_SYLLABUS_LENGTH = 30_000;
+
+async function readApiResponse(response, fallbackMessage) {
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    throw new Error("The server returned an unreadable response. Please try again.");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      typeof result.error === "string" ? result.error : fallbackMessage,
+    );
+  }
+
+  return result;
+}
+
+function normalizeSavedAssignments(items) {
+  if (
+    !Array.isArray(items) ||
+    !items.every(
+      (assignment) =>
+        assignment &&
+        typeof assignment.id === "string" &&
+        typeof assignment.title === "string" &&
+        Array.isArray(assignment.tasks) &&
+        assignment.tasks.every(
+          (task) =>
+            task &&
+            typeof task.id === "string" &&
+            typeof task.title === "string" &&
+            typeof task.completed === "boolean",
+        ),
+    )
+  ) {
+    throw new Error("The server returned an unexpected assignment list.");
+  }
+
+  return items.map((assignment) => ({
+    ...assignment,
+    course: assignment.course ?? "",
+    dueDate:
+      assignment.dueDateRaw || assignment.dueDate || "Not specified",
+  }));
+}
 
 export default function SyllabusForm() {
   const [syllabusText, setSyllabusText] = useState("");
   const [assignments, setAssignments] = useState(null);
-  const [completedItems, setCompletedItems] = useState({});
   const [error, setError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingSavedAssignments, setIsLoadingSavedAssignments] =
+    useState(true);
+  const [pendingTaskIds, setPendingTaskIds] = useState(() => new Set());
   const [isCelebrationDismissed, setIsCelebrationDismissed] = useState(false);
   const [confettiBurst, setConfettiBurst] = useState({ id: 0, x: 0, y: 0 });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSavedAssignments() {
+      try {
+        const response = await fetch("/api/assignments");
+        const result = await readApiResponse(
+          response,
+          "Could not load your saved assignments.",
+        );
+        const savedAssignments = normalizeSavedAssignments(result.assignments);
+
+        if (!cancelled) {
+          setAssignments(savedAssignments.length ? savedAssignments : null);
+          const savedTasks = savedAssignments.flatMap(
+            (assignment) => assignment.tasks,
+          );
+          setIsCelebrationDismissed(
+            savedTasks.length > 0 && savedTasks.every((task) => task.completed),
+          );
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(
+            loadError instanceof Error
+              ? loadError.message
+              : "Could not load your saved assignments.",
+          );
+        }
+      } finally {
+        if (!cancelled) setIsLoadingSavedAssignments(false);
+      }
+    }
+
+    loadSavedAssignments();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const totalTasks =
     assignments?.reduce(
-      (total, assignment) => total + assignment.checklist.length,
+      (total, assignment) => total + assignment.tasks.length,
       0,
     ) ?? 0;
 
   const allTasksComplete =
     totalTasks > 0 &&
-    (assignments ?? []).every((assignment, assignmentIndex) =>
-      assignment.checklist.every((_, itemIndex) =>
-        Boolean(completedItems[`${assignmentIndex}-${itemIndex}`]),
-      ),
+    (assignments ?? []).every((assignment) =>
+      assignment.tasks.every((task) => task.completed),
     );
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setAssignments(null);
-    setCompletedItems({});
-    setIsCelebrationDismissed(false);
+    setStatusMessage("");
     setError("");
     setIsLoading(true);
 
-    let response;
     try {
-      response = await fetch("/api/syllabus", {
+      const analysisResponse = await fetch("/api/syllabus", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ syllabusText }),
       });
-    } catch {
-      setError("Could not reach the server. Check your connection and try again.");
-      setIsLoading(false);
-      return;
-    }
-
-    let result;
-    try {
-      result = await response.json();
-    } catch {
-      setError("The server returned an unreadable response. Please try again.");
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(false);
-    if (!response.ok) {
-      setError(
-        typeof result.error === "string"
-          ? result.error
-          : "The syllabus could not be analyzed. Please try again.",
+      const result = await readApiResponse(
+        analysisResponse,
+        "The syllabus could not be analyzed. Please try again.",
       );
-      return;
-    }
 
-    if (
-      !Array.isArray(result.assignments) ||
-      !result.assignments.every(
-        (assignment) =>
-          assignment &&
-          typeof assignment.course === "string" &&
-          typeof assignment.title === "string" &&
-          typeof assignment.dueDate === "string" &&
-          Array.isArray(assignment.checklist) &&
-          assignment.checklist.every((item) => typeof item === "string"),
-      )
-    ) {
-      setError("The server returned an unexpected response. Please try again.");
-      return;
-    }
+      if (
+        !Array.isArray(result.assignments) ||
+        !result.assignments.every(
+          (assignment) =>
+            assignment &&
+            typeof assignment.course === "string" &&
+            typeof assignment.title === "string" &&
+            typeof assignment.dueDate === "string" &&
+            Array.isArray(assignment.checklist) &&
+            assignment.checklist.every((item) => typeof item === "string"),
+        )
+      ) {
+        throw new Error("The server returned an unexpected analysis response.");
+      }
 
-    setAssignments(result.assignments);
+      if (result.assignments.length === 0) {
+        setStatusMessage("No assignments were identified in that syllabus.");
+        return;
+      }
+
+      const saveResponse = await fetch("/api/assignments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignments: result.assignments }),
+      });
+      const savedResult = await readApiResponse(
+        saveResponse,
+        "The analysis succeeded, but the assignments could not be saved.",
+      );
+      const savedAssignments = normalizeSavedAssignments(
+        savedResult.assignments,
+      );
+
+      setAssignments((current) => [...(current ?? []), ...savedAssignments]);
+      setStatusMessage(
+        `Added ${savedAssignments.length} ${
+          savedAssignments.length === 1 ? "assignment" : "assignments"
+        } to your saved plan.`,
+      );
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "The syllabus could not be analyzed and saved. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  function toggleChecklistItem(itemId, event) {
-    if (!completedItems[itemId]) {
-      const checkbox = event.currentTarget.getBoundingClientRect();
-      setConfettiBurst((current) => ({
-        id: current.id + 1,
-        x: checkbox.left + checkbox.width / 2,
-        y: checkbox.top + checkbox.height / 2,
-      }));
-    }
+  async function toggleChecklistItem(assignmentId, task, event) {
+    if (pendingTaskIds.has(task.id)) return;
 
-    setIsCelebrationDismissed(false);
-    setCompletedItems((current) => ({
-      ...current,
-      [itemId]: !current[itemId],
-    }));
+    const completed = !task.completed;
+    const checkbox = event.currentTarget.getBoundingClientRect();
+    setPendingTaskIds((current) => new Set(current).add(task.id));
+    setError("");
+    setStatusMessage("");
+
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed }),
+      });
+      const result = await readApiResponse(
+        response,
+        "Could not save that checklist update.",
+      );
+
+      if (
+        result.task?.id !== task.id ||
+        typeof result.task.completed !== "boolean"
+      ) {
+        throw new Error("The server returned an unexpected task update.");
+      }
+
+      setAssignments((current) =>
+        current?.map((assignment) =>
+          assignment.id === assignmentId
+            ? {
+                ...assignment,
+                tasks: assignment.tasks.map((currentTask) =>
+                  currentTask.id === task.id
+                    ? { ...currentTask, completed: result.task.completed }
+                    : currentTask,
+                ),
+              }
+            : assignment,
+        ),
+      );
+      setIsCelebrationDismissed(false);
+
+      if (result.task.completed && !task.completed) {
+        setConfettiBurst((current) => ({
+          id: current.id + 1,
+          x: checkbox.left + checkbox.width / 2,
+          y: checkbox.top + checkbox.height / 2,
+        }));
+      }
+    } catch (updateError) {
+      setError(
+        updateError instanceof Error
+          ? updateError.message
+          : "Could not save that checklist update.",
+      );
+    } finally {
+      setPendingTaskIds((current) => {
+        const next = new Set(current);
+        next.delete(task.id);
+        return next;
+      });
+    }
   }
 
   return (
@@ -174,14 +318,20 @@ export default function SyllabusForm() {
             </p>
             <button
               className="syllabus-submit"
-              disabled={isLoading || !syllabusText.trim()}
+              disabled={
+                isLoading ||
+                isLoadingSavedAssignments ||
+                !syllabusText.trim()
+              }
               type="submit"
             >
-              {isLoading
-                ? "Analyzing..."
-                : assignments !== null
-                  ? "Update assignment plan"
-                  : "Break down syllabus"}
+              {isLoadingSavedAssignments
+                ? "Loading saved plan..."
+                : isLoading
+                  ? "Analyzing..."
+                  : assignments !== null
+                    ? "Add to assignment plan"
+                    : "Break down syllabus"}
             </button>
           </div>
         </form>
@@ -199,11 +349,8 @@ export default function SyllabusForm() {
             </p>
           ) : (
             <ul className="syllabus-assignment-list">
-              {assignments.map((assignment, assignmentIndex) => (
-                <li
-                  className="syllabus-assignment"
-                  key={`${assignment.course}-${assignment.title}-${assignmentIndex}`}
-                >
+              {assignments.map((assignment) => (
+                <li className="syllabus-assignment" key={assignment.id}>
                   <div className="syllabus-assignment-heading">
                     <div>
                       {assignment.course ? (
@@ -213,33 +360,35 @@ export default function SyllabusForm() {
                     </div>
                     <p className="syllabus-due-date">Due: {assignment.dueDate}</p>
                   </div>
-                  {assignment.checklist.length > 0 ? (
+                  {assignment.tasks.length > 0 ? (
                     <ul className="syllabus-checklist">
-                      {assignment.checklist.map((item, itemIndex) => {
-                        const itemId = `${assignmentIndex}-${itemIndex}`;
-                        return (
-                          <li key={itemId}>
-                            <label>
-                              <input
-                                checked={Boolean(completedItems[itemId])}
-                                onChange={(event) =>
-                                  toggleChecklistItem(itemId, event)
-                                }
-                                type="checkbox"
-                              />
-                              <span
-                                className={
-                                  completedItems[itemId]
-                                    ? "syllabus-checklist-complete"
-                                    : ""
-                                }
-                              >
-                                {item}
-                              </span>
-                            </label>
-                          </li>
-                        );
-                      })}
+                      {assignment.tasks.map((task) => (
+                        <li key={task.id}>
+                          <label>
+                            <input
+                              checked={task.completed}
+                              disabled={pendingTaskIds.has(task.id)}
+                              onChange={(event) =>
+                                toggleChecklistItem(
+                                  assignment.id,
+                                  task,
+                                  event,
+                                )
+                              }
+                              type="checkbox"
+                            />
+                            <span
+                              className={
+                                task.completed
+                                  ? "syllabus-checklist-complete"
+                                  : ""
+                              }
+                            >
+                              {task.title}
+                            </span>
+                          </label>
+                        </li>
+                      ))}
                     </ul>
                   ) : (
                     <p className="syllabus-no-checklist">
@@ -253,14 +402,13 @@ export default function SyllabusForm() {
           <button
             className="syllabus-start-over"
             onClick={() => {
-              setAssignments(null);
-              setCompletedItems({});
-              setIsCelebrationDismissed(false);
+              setSyllabusText("");
               setError("");
+              setStatusMessage("");
             }}
             type="button"
           >
-            Enter a different syllabus
+            Clear syllabus text
           </button>
         </section>
       )}
@@ -268,6 +416,11 @@ export default function SyllabusForm() {
       {error ? (
         <p className="syllabus-error" role="alert">
           {error}
+        </p>
+      ) : null}
+      {statusMessage ? (
+        <p className="syllabus-status" role="status">
+          {statusMessage}
         </p>
       ) : null}
 

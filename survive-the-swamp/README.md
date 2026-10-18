@@ -30,9 +30,7 @@ Survive the Swamp is an AI-powered, gamified task rescue app. Your semester work
 
 ## Features
 - AI syllabus and assignment ingestion
-- "Swamp Tide" workload engine (water rises as deadlines approach)
 - Task rescue: big assignments broken into 15-20 minute subtasks
-- Survival crafting and rewards (driftwood, rope, canvas)
 
 ## Tech Stack
 - Next.js, React, Tailwind CSS
